@@ -1,4 +1,4 @@
-"""ariadne_django_jwt_auth middleware module"""
+"""ariadne_django_jwt middleware module"""
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import AnonymousUser
 from .utils import get_token_from_http_header

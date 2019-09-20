@@ -1,4 +1,4 @@
-"""ariadne_django_jwt_auth utils module"""
+"""ariadne_django_jwt utils module"""
 import datetime
 import jwt
 from django.contrib.auth import get_user_model
