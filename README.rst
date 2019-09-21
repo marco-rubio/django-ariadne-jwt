@@ -2,8 +2,6 @@
 Django Ariadne JWT
 ==================
 
-|Pypi|
-
 Support for JWT based authentication for use with the ariadne_ graphql library
 running inside a Django_ project. It is heavily inspired by django-graph-jwt_.
 
