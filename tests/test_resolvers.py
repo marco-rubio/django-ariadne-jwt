@@ -1,10 +1,10 @@
-"""django_ariadne_jwt_auth types tests"""
+"""django_ariadne_jwt_auth resolvers tests"""
 import datetime
 from dataclasses import dataclass
 from django.contrib.auth.models import User
 from django.http import HttpRequest
 from django.test import TestCase
-from django_ariadne_jwt import types, utils
+from django_ariadne_jwt import resolvers, utils
 
 
 @dataclass
@@ -28,7 +28,7 @@ class TokenGenerationTestCase(TestCase):
         info = InfoObject(context=request)
         credentials = self.user_data
 
-        resolved_data = types.resolve_token_auth(None, info, **credentials)
+        resolved_data = resolvers.resolve_token_auth(None, info, **credentials)
 
         self.assertIsNotNone(resolved_data)
         self.assertIsInstance(resolved_data, dict)
@@ -42,7 +42,7 @@ class TokenGenerationTestCase(TestCase):
         credentials = self.user_data
         credentials["password"] = "BAAAAAD PASSWORD!"
 
-        resolved_data = types.resolve_token_auth(None, info, **credentials)
+        resolved_data = resolvers.resolve_token_auth(None, info, **credentials)
 
         self.assertIsNotNone(resolved_data)
         self.assertIsInstance(resolved_data, dict)
@@ -65,7 +65,7 @@ class TokenRefreshingTestCase(TestCase):
         info = InfoObject(context=HttpRequest())
         token = utils.create_jwt(self.user)
 
-        resolved_data = types.resolve_refresh_token(None, info, token)
+        resolved_data = resolvers.resolve_refresh_token(None, info, token)
 
         self.assertIsNotNone(resolved_data)
         self.assertIn("token", resolved_data)
@@ -83,7 +83,7 @@ class TokenRefreshingTestCase(TestCase):
 
         with self.settings(**settings):
             token = utils.create_jwt(self.user)
-            resolved_data = types.resolve_refresh_token(None, info, token)
+            resolved_data = resolvers.resolve_refresh_token(None, info, token)
 
             self.assertIsNotNone(resolved_data)
             self.assertIn("token", resolved_data)
@@ -101,7 +101,7 @@ class TokenRefreshingTestCase(TestCase):
 
         with self.settings(**settings):
             token = utils.create_jwt(self.user)
-            resolved_data = types.resolve_refresh_token(None, info, token)
+            resolved_data = resolvers.resolve_refresh_token(None, info, token)
 
             self.assertIsNotNone(resolved_data)
             self.assertIn("token", resolved_data)
@@ -124,7 +124,7 @@ class TokenVerificationTestCase(TestCase):
         info = InfoObject(context=request)
 
         token = "SOME.FABRICATED.JWT"
-        resolved_data = types.resolve_verify_token(None, info, token)
+        resolved_data = resolvers.resolve_verify_token(None, info, token)
 
         self.assertIsNotNone(resolved_data)
         self.assertIn("valid", resolved_data)
@@ -140,7 +140,7 @@ class TokenVerificationTestCase(TestCase):
 
         with self.settings(**settings):
             token = utils.create_jwt(self.user)
-            resolved_data = types.resolve_verify_token(None, info, token)
+            resolved_data = resolvers.resolve_verify_token(None, info, token)
 
             self.assertIsNotNone(resolved_data)
             self.assertIn("valid", resolved_data)
@@ -156,7 +156,7 @@ class TokenVerificationTestCase(TestCase):
 
         with self.settings(**settings):
             token = utils.create_jwt(self.user)
-            resolved_data = types.resolve_verify_token(None, info, token)
+            resolved_data = resolvers.resolve_verify_token(None, info, token)
 
             self.assertIsNotNone(resolved_data)
             self.assertIn("valid", resolved_data)

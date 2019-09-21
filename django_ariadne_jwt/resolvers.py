@@ -1,4 +1,4 @@
-"""ariadne_django_jwt types module"""
+"""ariadne_django_jwt resolvers module"""
 from ariadne import gql
 from django.contrib.auth import authenticate
 from .exceptions import (

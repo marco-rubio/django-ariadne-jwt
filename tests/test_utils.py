@@ -1,4 +1,4 @@
-"""django_ariadne_jwt_auth types tests"""
+"""django_ariadne_jwt_auth resolvers tests"""
 import datetime
 from django.contrib.auth.models import User, AnonymousUser
 from django.http import HttpRequest

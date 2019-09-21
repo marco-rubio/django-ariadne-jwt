@@ -84,7 +84,7 @@ Finally add the type definitions and resolvers to the executable schema
 
 .. code:: python
 
-    from django_ariadne_jwt.types import (
+    from django_ariadne_jwt.resolvers import (
       auth_token_definition,
       auth_token_verification_definition,
       resolve_token_auth,
