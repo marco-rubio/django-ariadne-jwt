@@ -10,35 +10,29 @@ class JSONWebTokenBackend(object):
 
     def authenticate(self, request, token=None, **kwargs):
         """Performs authentication"""
-        user = None
-
-        if token is not None:
-            token_data = None
-
-            try:
-                token_data = decode_jwt(token)
-
-            except JSONWebTokenError:
-                pass
-
-            if token_data is not None:
-                User = get_user_model()
-                credentials = {User.USERNAME_FIELD: token_data["user"]}
-
-                try:
-                    user = User.objects.get(**credentials)
-
-                except User.DoesNotExist:
-                    pass
-
-        return user
-
-    def get_user(self, user_id):
-        """Gets a user from its id"""
-        User = get_user_model()
+        if token is None:
+            return
 
         try:
-            return User.objects.get(pk=user_id)
+            token_data = decode_jwt(token)
+
+        except JSONWebTokenError:
+            return
+
+        return self.get_user(**self.get_user_kwargs(token_data))
+
+    def get_user(self, user_id=None, **kwargs):
+        """Gets a user from its id"""
+        User = get_user_model()
+        if user_id is not None:
+            kwargs["pk"] = user_id
+
+        try:
+            return User.objects.get(**kwargs)
 
         except User.DoesNotExist:
             return None
+
+    def get_user_kwargs(self, token_data):
+        User = get_user_model()
+        return {User.USERNAME_FIELD: token_data["user"]}
