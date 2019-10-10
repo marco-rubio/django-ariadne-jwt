@@ -21,6 +21,7 @@ class BackendTestCase(BaseBackendTestCase):
     """Tests for the JWT backend"""
 
     def setUp(self):
+        super().setUp()
         User = get_user_model()
 
         self.user_data = {
