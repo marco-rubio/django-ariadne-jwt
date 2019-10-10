@@ -113,11 +113,7 @@ class JSONWebTokenBackend(object):
         """Refreshes a JWT if possible"""
         decoded = self.decode(token)
 
-        oldest_iat_claim = decoded.get(
-            self.ORIGINAL_IAT_CLAIM, decoded.get("iat")
-        )
-
-        if self.has_reached_end_of_life(oldest_iat_claim):
+        if self.is_token_end_of_life(decoded):
             raise MaximumTokenLifeReachedError()
 
         user = self.get_user(**self.get_user_kwargs(decoded))
@@ -125,6 +121,11 @@ class JSONWebTokenBackend(object):
             raise InvalidTokenError(_("User not found"))
 
         return self.create(user, {self.ORIGINAL_IAT_CLAIM: decoded["iat"]})
+
+    def is_token_end_of_life(self, token_data):
+        return self.has_reached_end_of_life(
+            token_data.get(self.ORIGINAL_IAT_CLAIM, token_data.get("iat"))
+        )
 
     def decode(self, token):
         """Decodes a JWT"""
