@@ -21,22 +21,13 @@ DEFAULT_JWT_ALGORITHM = "HS256"
 
 def get_token_from_http_header(request):
     """Retrieves the http authorization header from the request"""
-    token = None
+    header = request.META.get(HTTP_AUTHORIZATION_HEADER, False)
+    if header is False:
+        return None
 
-    try:
-        header = request.META.get(HTTP_AUTHORIZATION_HEADER, "")
-
-    except AttributeError:
-        header = ""
-
-    try:
-        prefix, payload = header.split()
-
-    except ValueError:
-        prefix = "-"
-
-    if prefix.lower() == AUTHORIZATION_HEADER_PREFIX.lower():
-        token = payload
+    prefix, token = header.split()
+    if prefix.lower() != AUTHORIZATION_HEADER_PREFIX.lower():
+        return None
 
     return token
 
