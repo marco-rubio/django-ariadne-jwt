@@ -5,8 +5,8 @@ from django.contrib.auth import get_user_model
 from django.http import HttpRequest
 from django.test import TestCase
 from unittest.mock import Mock, patch
+from django_ariadne_jwt.backends import JSONWebTokenBackend
 from django_ariadne_jwt.middleware import JSONWebTokenMiddleware
-from django_ariadne_jwt.utils import create_jwt
 
 HTTP_AUTHORIZATION_HEADER = "HTTP_AUTHORIZATION"
 
@@ -42,7 +42,7 @@ class MiddlewareTestCase(TestCase):
 
     def test_without_user_and_with_valid_token(self):
         """Tests resolving with a valid token on a request without user"""
-        token = create_jwt(self.user)
+        token = JSONWebTokenBackend().create(self.user)
 
         request = HttpRequest()
         request.META[HTTP_AUTHORIZATION_HEADER] = f"Token {token}"
@@ -70,7 +70,7 @@ class MiddlewareTestCase(TestCase):
 
     def test_with_user_and_valid_token(self):
         """Tests that the middleware respects the already authenticated user"""
-        token = create_jwt(self.other_user)
+        token = JSONWebTokenBackend().create(self.other_user)
 
         request = HttpRequest()
         request.user = self.user
@@ -125,7 +125,7 @@ class MiddlewareTestCase(TestCase):
 
         middleware = JSONWebTokenMiddleware()
 
-        token = create_jwt(self.user)
+        token = JSONWebTokenBackend().create(self.user)
 
         request = HttpRequest()
         request.META[HTTP_AUTHORIZATION_HEADER] = f"Token {token}"

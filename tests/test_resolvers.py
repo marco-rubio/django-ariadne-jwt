@@ -4,7 +4,8 @@ from dataclasses import dataclass
 from django.contrib.auth.models import User
 from django.http import HttpRequest
 from django.test import TestCase
-from django_ariadne_jwt import resolvers, utils
+from django_ariadne_jwt import resolvers
+from django_ariadne_jwt.backends import JSONWebTokenBackend
 
 
 @dataclass
@@ -63,7 +64,7 @@ class TokenRefreshingTestCase(TestCase):
     def test_refreshing_for_valid_token(self):
         """Test refreshing a valid token"""
         info = InfoObject(context=HttpRequest())
-        token = utils.create_jwt(self.user)
+        token = JSONWebTokenBackend().create(self.user)
 
         resolved_data = resolvers.resolve_refresh_token(None, info, token)
 
@@ -82,7 +83,7 @@ class TokenRefreshingTestCase(TestCase):
         }
 
         with self.settings(**settings):
-            token = utils.create_jwt(self.user)
+            token = JSONWebTokenBackend().create(self.user)
             resolved_data = resolvers.resolve_refresh_token(None, info, token)
 
             self.assertIsNotNone(resolved_data)
@@ -100,7 +101,7 @@ class TokenRefreshingTestCase(TestCase):
         }
 
         with self.settings(**settings):
-            token = utils.create_jwt(self.user)
+            token = JSONWebTokenBackend().create(self.user)
             resolved_data = resolvers.resolve_refresh_token(None, info, token)
 
             self.assertIsNotNone(resolved_data)
@@ -139,7 +140,7 @@ class TokenVerificationTestCase(TestCase):
         settings = {"JWT_EXPIRATION_DELTA": datetime.timedelta(seconds=-10)}
 
         with self.settings(**settings):
-            token = utils.create_jwt(self.user)
+            token = JSONWebTokenBackend().create(self.user)
             resolved_data = resolvers.resolve_verify_token(None, info, token)
 
             self.assertIsNotNone(resolved_data)
@@ -155,7 +156,7 @@ class TokenVerificationTestCase(TestCase):
         settings = {"JWT_EXPIRATION_DELTA": datetime.timedelta(seconds=2)}
 
         with self.settings(**settings):
-            token = utils.create_jwt(self.user)
+            token = JSONWebTokenBackend().create(self.user)
             resolved_data = resolvers.resolve_verify_token(None, info, token)
 
             self.assertIsNotNone(resolved_data)

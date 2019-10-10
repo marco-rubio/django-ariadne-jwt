@@ -2,7 +2,7 @@
 from django.contrib.auth import authenticate, get_user_model
 from django.http import HttpRequest
 from django.test import TestCase
-from django_ariadne_jwt import backends, utils
+from django_ariadne_jwt import backends
 
 
 class BackendTestCase(TestCase):
@@ -12,7 +12,7 @@ class BackendTestCase(TestCase):
         User = get_user_model()
 
         self.user_data = {
-            User.USERNAME_FIELD: 'test_user',
+            User.USERNAME_FIELD: "test_user",
             "password": "lame_password",
         }
 
@@ -22,7 +22,7 @@ class BackendTestCase(TestCase):
 
     def test_authentication_with_valid_token(self):
         """Tests the authentication of a user from a valid token"""
-        token = utils.create_jwt(self.user)
+        token = backends.JSONWebTokenBackend().create(self.user)
         request = HttpRequest()
 
         settings = {

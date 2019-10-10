@@ -1,7 +1,7 @@
 """ariadne_django_jwt middleware module"""
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import AnonymousUser
-from .utils import get_token_from_http_header
+from .backends import load_backend
 
 __all__ = ["JSONWebTokenMiddleware"]
 
@@ -13,7 +13,7 @@ class JSONWebTokenMiddleware(object):
         """Performs the middleware relevant operations"""
         request = info.context
 
-        token = get_token_from_http_header(request)
+        token = load_backend().get_token_from_http_header(request)
 
         if token is not None:
             user = getattr(request, "user", None)

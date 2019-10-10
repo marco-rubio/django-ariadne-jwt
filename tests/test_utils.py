@@ -4,7 +4,8 @@ from django.contrib.auth.models import User, AnonymousUser
 from django.http import HttpRequest
 from django.test import TestCase
 from django.utils import timezone
-from django_ariadne_jwt import exceptions, utils
+from django_ariadne_jwt import exceptions
+from django_ariadne_jwt.backends import JSONWebTokenBackend
 
 
 HTTP_AUTHORIZATION_HEADER = "HTTP_AUTHORIZATION"
@@ -19,7 +20,7 @@ class HttpHeaderRetrievalTestCase(TestCase):
         request = HttpRequest()
         request.META[HTTP_AUTHORIZATION_HEADER] = f"Token {expected_token}"
 
-        token = utils.get_token_from_http_header(request)
+        token = JSONWebTokenBackend().get_token_from_http_header(request)
 
         self.assertEqual(expected_token, token)
 
@@ -27,16 +28,19 @@ class HttpHeaderRetrievalTestCase(TestCase):
 class JWTCreationTestCase(TestCase):
     """Tests the creation of JWTs"""
 
+    def setUp(self):
+        self.backend = JSONWebTokenBackend()
+
     def test_jwt_creation_for_non_authenticated_user(self):
         """Tests the creation of a JWT for a non-authenticated user"""
         with self.assertRaises(exceptions.AuthenticatedUserRequiredError):
             user = AnonymousUser()
-            utils.create_jwt(user)
+            self.backend.create(user)
 
     def test_jwt_creation_for_authenticated_user(self):
         """Tests the creation of a JWT for an authenticated user"""
         user = User(username="test_user")
-        token = utils.create_jwt(user)
+        token = self.backend.create(user)
 
         self.assertIsNotNone(token)
         self.assertIsInstance(token, str)
@@ -48,19 +52,22 @@ class JWTCreationTestCase(TestCase):
 class JWTDecodingTestCase(TestCase):
     """Tests the decoding of JWTs"""
 
+    def setUp(self):
+        self.backend = JSONWebTokenBackend()
+
     def test_invalid_jwt_decoding(self):
         """Tests decoding of an invalid JWT"""
         with self.assertRaises(exceptions.InvalidTokenError):
             token = "SOME.FABRICATED.JWT"
-            utils.decode_jwt(token)
+            self.backend.decode(token)
 
     def test_valid_jwt_decoding(self):
         """Tests decoding of a valid JWT"""
         expected_username = "test_user"
         user = User(username=expected_username)
 
-        token = utils.create_jwt(user)
-        data = utils.decode_jwt(token)
+        token = self.backend.create(user)
+        data = self.backend.decode(token)
 
         self.assertIn("user", data)
         self.assertEqual(data["user"], expected_username)
@@ -73,14 +80,17 @@ class JWTDecodingTestCase(TestCase):
         settings = {"JWT_EXPIRATION_DELTA": datetime.timedelta(seconds=-10)}
 
         with self.settings(**settings):
-            token = utils.create_jwt(user)
+            token = self.backend.create(user)
 
             with self.assertRaises(exceptions.ExpiredTokenError):
-                utils.decode_jwt(token)
+                self.backend.decode(token)
 
 
 class JWTRefreshingTestCase(TestCase):
     """Tests the refreshing of JWTs"""
+
+    def setUp(self):
+        self.backend = JSONWebTokenBackend()
 
     def test_token_not_at_end_of_life_detection(self):
         """Tests the detection of a token which is at its end of life"""
@@ -96,7 +106,9 @@ class JWTRefreshingTestCase(TestCase):
         }
 
         with self.settings(**settings):
-            self.assertFalse(utils.has_reached_end_of_life(original_iat_claim))
+            self.assertFalse(
+                self.backend.has_reached_end_of_life(original_iat_claim)
+            )
 
     def test_token_at_end_of_life_detection(self):
         """Tests the detection of a token which isn't yet at its end of life"""
@@ -112,7 +124,9 @@ class JWTRefreshingTestCase(TestCase):
         }
 
         with self.settings(**settings):
-            self.assertTrue(utils.has_reached_end_of_life(original_iat_claim))
+            self.assertTrue(
+                self.backend.has_reached_end_of_life(original_iat_claim)
+            )
 
     def test_refreshing_jwt_not_at_end_of_life(self):
         """Tests refreshing a JWT for token at its end of life"""
@@ -124,15 +138,19 @@ class JWTRefreshingTestCase(TestCase):
         }
 
         with self.settings(**settings):
-            first_token = utils.create_jwt(user)
-            decoded_first_token = utils.decode_jwt(first_token)
-            second_token = utils.refresh_jwt(first_token)  # Refresh the token
-            decoded_second_token = utils.decode_jwt(second_token)
+            first_token = self.backend.create(user)
+            decoded_first_token = self.backend.decode(first_token)
+            second_token = self.backend.refresh(
+                first_token
+            )  # Refresh the token
+            decoded_second_token = self.backend.decode(second_token)
 
             self.assertIsNotNone(second_token)
-            self.assertIn(utils.ORIGINAL_IAT_CLAIM, decoded_second_token)
+            self.assertIn(
+                self.backend.ORIGINAL_IAT_CLAIM, decoded_second_token
+            )
             self.assertEqual(
-                decoded_second_token[utils.ORIGINAL_IAT_CLAIM],
+                decoded_second_token[self.backend.ORIGINAL_IAT_CLAIM],
                 decoded_first_token["iat"],
             )
 
@@ -146,10 +164,10 @@ class JWTRefreshingTestCase(TestCase):
         }
 
         with self.settings(**settings):
-            token = utils.create_jwt(user)
+            token = self.backend.create(user)
 
             with self.assertRaises(exceptions.MaximumTokenLifeReachedError):
-                utils.refresh_jwt(token)  # Refresh the token
+                self.backend.refresh(token)  # Refresh the token
 
     def test_jwt_with_non_existent_user(self):
         """Tests refreshing a JWT for a user that doesn't exist"""
@@ -162,7 +180,7 @@ class JWTRefreshingTestCase(TestCase):
         }
 
         with self.settings(**settings):
-            token = utils.create_jwt(user)
+            token = self.backend.create(user)
 
             with self.assertRaises(exceptions.InvalidTokenError):
-                utils.refresh_jwt(token)
+                self.backend.refresh(token)
