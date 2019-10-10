@@ -116,14 +116,8 @@ class JSONWebTokenBackend(object):
         if self.has_reached_end_of_life(oldest_iat_claim):
             raise MaximumTokenLifeReachedError()
 
-        User = get_user_model()
-
-        credentials = {User.USERNAME_FIELD: decoded["user"]}
-
-        try:
-            user = User.objects.get(**credentials)
-
-        except User.DoesNotExist:
+        user = self.get_user(**self.get_user_kwargs(decoded))
+        if user is None:
             raise InvalidTokenError(_("User not found"))
 
         return self.create(user, {self.ORIGINAL_IAT_CLAIM: decoded["iat"]})
