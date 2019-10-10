@@ -16,6 +16,7 @@ from .exceptions import (
 ORIGINAL_IAT_CLAIM = "orig_iat"
 HTTP_AUTHORIZATION_HEADER = "HTTP_AUTHORIZATION"
 AUTHORIZATION_HEADER_PREFIX = "Token"
+DEFAULT_JWT_ALGORITHM = "HS256"
 
 
 def get_token_from_http_header(request):
@@ -76,7 +77,11 @@ def create_jwt(user, extra_payload={}):
         "exp": int((now + expiration_delta).timestamp()),
     }
 
-    return jwt.encode(payload, settings.SECRET_KEY).decode("utf-8")
+    return jwt.encode(
+        payload,
+        settings.SECRET_KEY,
+        algorithm=getattr(settings, "JWT_ALGORITHM", DEFAULT_JWT_ALGORITHM),
+    ).decode("utf-8")
 
 
 def refresh_jwt(token):
@@ -104,7 +109,13 @@ def refresh_jwt(token):
 def decode_jwt(token):
     """Decodes a JWT"""
     try:
-        decoded = jwt.decode(token, settings.SECRET_KEY)
+        decoded = jwt.decode(
+            token,
+            settings.SECRET_KEY,
+            algorithms=getattr(
+                settings, "JWT_ALGORITHMS", DEFAULT_JWT_ALGORITHM
+            ),
+        )
 
     except ExpiredSignatureError:
         raise ExpiredTokenError()

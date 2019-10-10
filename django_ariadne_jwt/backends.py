@@ -1,5 +1,6 @@
 """GraphQL auth backends module"""
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from .exceptions import JSONWebTokenError
 from .utils import decode_jwt
 

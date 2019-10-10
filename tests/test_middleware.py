@@ -51,7 +51,7 @@ class MiddlewareTestCase(TestCase):
 
         def next(root, info, **kwargs):
             self.assertTrue(hasattr(info.context, "user"))
-            self.assertEquals(info.context.user, self.user)
+            self.assertEqual(info.context.user, self.user)
 
         next = Mock(wraps=next)
 
@@ -80,7 +80,7 @@ class MiddlewareTestCase(TestCase):
 
         def next(root, info, **kwargs):
             self.assertTrue(hasattr(info.context, "user"))
-            self.assertEquals(info.context.user, self.user)
+            self.assertEqual(info.context.user, self.user)
 
         settings = {
             "AUTHENTICATION_BACKENDS": (
