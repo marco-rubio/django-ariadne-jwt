@@ -77,28 +77,32 @@ class JSONWebTokenBackend(object):
         User = get_user_model()
         return {User.USERNAME_FIELD: token_data["user"]}
 
-    def create(self, user, extra_payload={}):
-        """Creates a JWT for an authenticated user"""
-        if not user.is_authenticated:
-            raise AuthenticatedUserRequiredError(
-                "JWT generationr requires an authenticated user"
-            )
-
+    def generate_token_payload(self, user, extra_payload=None):
+        """Return a dictionary containing the JWT payload"""
+        if extra_payload is None:
+            extra_payload = {}
         expiration_delta = getattr(
             settings, "JWT_EXPIRATION_DELTA", datetime.timedelta(minutes=5)
         )
 
         now = timezone.localtime()
 
-        payload = {
+        return {
             **extra_payload,
             "user": user.username,
             "iat": int(now.timestamp()),
             "exp": int((now + expiration_delta).timestamp()),
         }
 
+    def create(self, user, extra_payload=None):
+        """Creates a JWT for an authenticated user"""
+        if not user.is_authenticated:
+            raise AuthenticatedUserRequiredError(
+                "JWT generationr requires an authenticated user"
+            )
+
         return jwt.encode(
-            payload,
+            self.generate_token_payload(user, extra_payload=extra_payload),
             settings.SECRET_KEY,
             algorithm=getattr(
                 settings, "JWT_ALGORITHM", self.DEFAULT_JWT_ALGORITHM
