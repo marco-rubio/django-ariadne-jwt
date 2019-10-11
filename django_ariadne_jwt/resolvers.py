@@ -26,34 +26,49 @@ auth_token_verification_definition = gql(
 )
 
 
-def resolve_token_auth(parent, info, **credentials):
-    """Resolves the token auth mutation"""
-    user = authenticate(info.context, **credentials)
-    return {"token": load_backend().create(user) if user else None}
+class TokenAuthResolver:
+    def get_payload(self, user):
+        return {"token": load_backend().create(user) if user else None}
+
+    def __call__(self, parent, info, **credentials):
+        user = authenticate(info.context, **credentials)
+        return self.get_payload(user)
 
 
-def resolve_refresh_token(parent, info, token):
-    """Resolves the resfresh token mutaiton"""
-
-    try:
-        token = load_backend().refresh(token)
-
-    except (InvalidTokenError, MaximumTokenLifeReachedError):
-        token = None
-
-    return {"token": token}
+# TODO Add DeprecationWarning?
+resolve_token_auth = TokenAuthResolver()
 
 
-def resolve_verify_token(parent, info, token: str):
-    """Resolves the verify token mutation"""
-    token_verification = {}
+class RefreshTokenResolver:
+    def __call__(self, parent, info, token):
+        """Resolves the resfresh token mutaiton"""
 
-    try:
-        decoded = load_backend().decode(token)
-        token_verification["valid"] = True
-        token_verification["user"] = decoded.get("user")
+        try:
+            token = load_backend().refresh(token)
 
-    except (InvalidTokenError, ExpiredTokenError):
-        token_verification["valid"] = False
+        except (InvalidTokenError, MaximumTokenLifeReachedError):
+            token = None
 
-    return token_verification
+        return {"token": token}
+
+
+resolve_refresh_token = RefreshTokenResolver()
+
+
+class VerifyTokenResolver:
+    def __call__(self, parent, info, token: str):
+        """Resolves the verify token mutation"""
+        token_verification = {}
+
+        try:
+            decoded = load_backend().decode(token)
+            token_verification["valid"] = True
+            token_verification["user"] = decoded.get("user")
+
+        except (InvalidTokenError, ExpiredTokenError):
+            token_verification["valid"] = False
+
+        return token_verification
+
+
+resolve_verify_token = VerifyTokenResolver()
