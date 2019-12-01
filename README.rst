@@ -29,7 +29,7 @@ First add ``JSONWebTokenBackend`` to your *AUTHENTICATION_BACKENDS*
 Then add ``JSONWebTokenMiddleware`` to your view
 
 .. code:: python
-    from ariadne.contrib.django.views import GraphQLView, MiddlewareManager
+
     from django_ariadne_jwt.middleware import JSONWebTokenMiddleware
 
     urlpatterns = [
@@ -38,7 +38,7 @@ Then add ``JSONWebTokenMiddleware`` to your view
           "graphql/",
           csrf_exempt(
               GraphQLView.as_view(
-                  schema=schema, middleware=MiddlewareManager([JSONWebTokenMiddleware()])
+                  schema=schema, middleware=[JSONWebTokenMiddleware()]
               )
           ),
           name="graphql"
