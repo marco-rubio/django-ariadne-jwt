@@ -29,6 +29,7 @@ First add ``JSONWebTokenBackend`` to your *AUTHENTICATION_BACKENDS*
 Then add ``JSONWebTokenMiddleware`` to your view
 
 .. code:: python
+
     from ariadne.contrib.django.views import GraphQLView, MiddlewareManager
     from django_ariadne_jwt.middleware import JSONWebTokenMiddleware
 
