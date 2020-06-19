@@ -71,7 +71,7 @@ def create_jwt(user, extra_payload={}):
 
     payload = {
         **extra_payload,
-        "user": user.username,
+        "user": (user, get_user_model().USERNAME_FIELD),
         "iat": int(now.timestamp()),
         "exp": int((now + expiration_delta).timestamp()),
     }
