@@ -5,9 +5,9 @@ from django.contrib.auth import get_user_model
 from django.http import HttpRequest
 from django.test import TestCase
 from unittest.mock import Mock
+from django_ariadne_jwt.backends import JSONWebTokenBackend
 from django_ariadne_jwt.decorators import login_required
 from django_ariadne_jwt.middleware import JSONWebTokenMiddleware
-from django_ariadne_jwt.utils import create_jwt
 
 
 HTTP_AUTHORIZATION_HEADER = "HTTP_AUTHORIZATION"
@@ -62,7 +62,7 @@ class DecoratorsTestCase(TestCase):
 
         middleware = [JSONWebTokenMiddleware()]
 
-        token = create_jwt(self.user)
+        token = JSONWebTokenBackend().create(self.user)
 
         request = HttpRequest()
         request.META[HTTP_AUTHORIZATION_HEADER] = f"Token {token}"
