@@ -76,8 +76,11 @@ def create_jwt(user, extra_payload={}):
         "exp": int((now + expiration_delta).timestamp()),
     }
 
-    return jwt.encode(payload, settings.SECRET_KEY).decode("utf-8")
-
+    token = jwt.encode(payload, settings.SECRET_KEY)
+    # As of v2.0.0, PyJWT tokens are returned as string instead of a byte string
+    if isinstance(token, bytes):
+        return token.decode("utf-8")
+    return token
 
 def refresh_jwt(token):
     """Refreshes a JWT if possible"""
