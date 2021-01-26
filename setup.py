@@ -40,7 +40,7 @@ setup(
     install_requires=[
         'ariadne>=0.6.0',
         'Django>=2.0.0',
-        'PyJWT>=1.5.0',
+        'PyJWT>=1.5.0,<2.0.0',
     ],
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
@@ -64,7 +64,7 @@ setup(
     tests_require=[
         'ariadne>=0.6.0',
         'Django>=2.0.0',
-        'PyJWT>=1.5.0',
+        'PyJWT>=1.5.0,<2.0.0',
     ],
     package_data={
         'ardiadne_django_jwt': [
